@@ -60,9 +60,9 @@ export function drawField(canvas: HTMLCanvasElement, snap: LiveSnapshot, progres
   const h = canvas.height;
 
   // grass
-  ctx.fillStyle = '#1c4423';
+  ctx.fillStyle = '#2c9e4b';
   ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = '#245229';
+  ctx.fillStyle = '#37b45a';
   for (let i = 0; i < 6; i++) {
     if (i % 2 === 0) continue;
     ctx.beginPath();
@@ -82,7 +82,7 @@ export function drawField(canvas: HTMLCanvasElement, snap: LiveSnapshot, progres
   ];
 
   // infield dirt
-  ctx.fillStyle = '#8a5a33';
+  ctx.fillStyle = '#d8913f';
   ctx.beginPath();
   ctx.moveTo(cx, homeY + 14);
   ctx.lineTo(cx + d + 16, homeY - d);
@@ -92,8 +92,8 @@ export function drawField(canvas: HTMLCanvasElement, snap: LiveSnapshot, progres
   ctx.fill();
 
   // base paths
-  ctx.strokeStyle = '#c9a06c';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#ffe0b0';
+  ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.moveTo(cx, homeY);
   ctx.lineTo(baseXY[0][0], baseXY[0][1]);
@@ -103,7 +103,7 @@ export function drawField(canvas: HTMLCanvasElement, snap: LiveSnapshot, progres
   ctx.stroke();
 
   // pitcher mound
-  ctx.fillStyle = '#a06b3d';
+  ctx.fillStyle = '#c07b45';
   ctx.beginPath();
   ctx.arc(cx, homeY - d, 9, 0, Math.PI * 2);
   ctx.fill();

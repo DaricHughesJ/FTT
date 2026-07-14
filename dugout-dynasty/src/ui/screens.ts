@@ -176,6 +176,19 @@ function statLine(p: Player): string {
   return `Bat ${formatNumber(playerBat(p))} · Spd ${formatNumber(playerSpd(p))}`;
 }
 
+/** Small ▲/▼ chip for a recent random development change. */
+function devChip(p: Player, now: number): HTMLElement | null {
+  if (!p.devDelta || !p.devAt || now - p.devAt > 90_000) return null;
+  const up = p.devDelta > 0;
+  return el('span', { class: `dev-chip ${up ? 'dev-up' : 'dev-down'}` }, [
+    `${up ? '▲' : '▼'}${Math.abs(p.devDelta * 100).toFixed(1)}%`,
+  ]);
+}
+
+function potentialChip(p: Player): HTMLElement {
+  return el('span', { class: `grade grade-${p.potential}`, title: 'Potential' }, [p.potential]);
+}
+
 export function renderTeam(host: HTMLElement, ctx: UICtx): void {
   const s = ctx.engine.state;
   const children: Node[] = [];
@@ -191,17 +204,23 @@ export function renderTeam(host: HTMLElement, ctx: UICtx): void {
         ]),
       ]),
     ]),
+    el('div', { class: 'hint' }, [
+      'The letter chip is a player\'s potential. After every game, players can randomly improve or decline — big games (hits, homers, pitcher wins) tilt the odds toward growth, and high-potential players grow faster.',
+    ]),
     el('h2', {}, ['Lineup']),
   );
 
   const renderPlayer = (p: Player): HTMLElement => {
     const cost = upgradeCostFor(ctx, p);
+    const dev = devChip(p, ctx.now());
     return el('div', { class: 'card' }, [
       el('div', { class: 'row' }, [
         el('div', { class: 'grow' }, [
           el('div', { class: 'pname' }, [
             (() => el('span', { class: 'pos-chip' }, [p.pos]))(),
-            `${p.name}${p.up > 0 ? ` +${p.up}` : ''}`,
+            potentialChip(p),
+            ` ${p.name}${p.up > 0 ? ` +${p.up}` : ''}`,
+            ...(dev ? [' ', dev] : []),
           ]),
           el('div', { class: 'stat-line' }, [
             `${statLine(p)} · Value ${formatCash(playerValue(p, s.season.tier))}`,
@@ -490,7 +509,8 @@ export function renderTrade(host: HTMLElement, ctx: UICtx): void {
         el('div', { class: 'grow' }, [
           el('div', { class: 'pname' }, [
             (() => el('span', { class: 'pos-chip' }, [p.pos]))(),
-            p.name,
+            potentialChip(p),
+            ` ${p.name}`,
           ]),
           el('div', { class: 'stat-line' }, [
             `${statLine(p)} · Value ${formatCash(playerValue(p, s.season.tier))}`,
@@ -519,7 +539,8 @@ export function renderTrade(host: HTMLElement, ctx: UICtx): void {
             el('div', { class: 'grow' }, [
               el('div', { class: 'pname' }, [
                 (() => el('span', { class: 'pos-chip' }, [p.pos]))(),
-                p.name,
+                potentialChip(p),
+                ` ${p.name}`,
               ]),
               el('div', { class: 'stat-line' }, [`Value ${formatCash(playerValue(p, s.season.tier))}`]),
             ]),

@@ -1,5 +1,5 @@
 import { Rng } from './rng';
-import { Player, playerArm, playerBat, playerSpd } from './roster';
+import { GamePerformance, Player, playerArm, playerBat, playerSpd } from './roster';
 
 export type PlayKind = 'out' | 'single' | 'double' | 'triple' | 'homer';
 
@@ -20,6 +20,8 @@ export interface GameResult {
   homeHr: number; // home-team home-run count (for stats/leaderboards)
   events: PlayEvent[];
   innings: number;
+  /** Per-batter box score for the home (player) team, keyed by player id. */
+  homePerf: Record<string, GamePerformance>;
 }
 
 export interface SimTeam {
@@ -48,6 +50,7 @@ export function simGame(rng: Rng, home: SimTeam, away: SimTeam): GameResult {
   let homeHr = 0;
   const baseInnings = 3;
   let innings = baseInnings;
+  const homePerf: Record<string, GamePerformance> = {};
 
   const batterIdx = { home: 0, away: 0 };
 
@@ -83,6 +86,13 @@ export function simGame(rng: Rng, home: SimTeam, away: SimTeam): GameResult {
         outs++;
       }
 
+      if (side === 'home') {
+        const box = (homePerf[batter.id] ??= { atBats: 0, hits: 0, homers: 0 });
+        box.atBats++;
+        if (kind !== 'out') box.hits++;
+        if (kind === 'homer') box.homers++;
+      }
+
       events.push({
         inning,
         half: side === 'away' ? 'top' : 'bottom',
@@ -114,7 +124,7 @@ export function simGame(rng: Rng, home: SimTeam, away: SimTeam): GameResult {
     e.t = (i + 1) / (events.length + 1);
   });
 
-  return { homeRuns, awayRuns, homeWin, homeHr, events, innings };
+  return { homeRuns, awayRuns, homeWin, homeHr, events, innings, homePerf };
 }
 
 /** Advance base runners for a hit; returns runs scored. Batter included. */

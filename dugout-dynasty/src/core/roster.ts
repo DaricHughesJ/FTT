@@ -14,6 +14,12 @@ export interface Player {
   spd: number;
   /** Upgrade count; effective stat = base * (1 + upgradeStatFrac * up). */
   up: number;
+  /** Development ceiling — sets the odds and size of random growth. */
+  potential: Grade;
+  /** Last development change as a signed fraction (e.g. +0.02), for the UI. */
+  devDelta?: number;
+  /** Timestamp of the last development change. */
+  devAt?: number;
 }
 
 export interface Prospect {
@@ -62,6 +68,13 @@ export function teamRating(roster: Player[]): number {
   return roster.reduce((sum, p) => sum + playerRating(p), 0) / roster.length;
 }
 
+const GRADES: Grade[] = ['C', 'B', 'A', 'S'];
+
+export function rollPotential(rng: Rng): Grade {
+  const w = BALANCE.development.potentialWeights;
+  return GRADES[rng.weighted(GRADES.map((g) => w[g]))];
+}
+
 /** Generate one player around a league-average stat line. quality ~1 is average. */
 export function generatePlayer(rng: Rng, tier: number, pos: Position, quality = 1): Player {
   const avg = BALANCE.leagueAvgStat(tier) * quality;
@@ -74,6 +87,7 @@ export function generatePlayer(rng: Rng, tier: number, pos: Position, quality = 
     arm: pos === 'P' ? jitter() : jitter() * 0.5,
     spd: jitter(),
     up: 0,
+    potential: rollPotential(rng),
   };
 }
 
@@ -101,7 +115,8 @@ export function upgradeCost(p: Player, tier: number, trainingLevel: number): num
 export function playerValue(p: Player, tier: number): number {
   const avg = BALANCE.leagueAvgStat(tier);
   const rel = playerRating(p) / avg;
-  return BALANCE.playerValueBase * Math.pow(4, tier) * rel * rel;
+  const ceiling = BALANCE.potentialValueMult[p.potential] ?? 1;
+  return BALANCE.playerValueBase * Math.pow(4, tier) * rel * rel * ceiling;
 }
 
 export function prospectValue(pr: Prospect): number {
@@ -148,5 +163,58 @@ export function callUpProspect(rng: Rng, pr: Prospect, currentTier: number): Pla
     arm: pr.pos === 'P' ? stat() : stat() * 0.5,
     spd: stat(),
     up: 0,
+    potential: pr.grade, // a prospect's grade becomes their career ceiling
   };
+}
+
+// ---- Post-game development ----
+
+export interface GamePerformance {
+  atBats: number;
+  hits: number;
+  homers: number;
+}
+
+/**
+ * One post-game development roll. Entirely random, but the weights move:
+ * potential sets baseline gain/loss odds, a hot game (hits, homers, or a
+ * pitcher win) adds gain weight, and an 0-for game adds loss weight.
+ * Gains are multiplicative, so high-stat players gain more raw points.
+ * Returns the applied fraction (+0.02 = grew 2%), 0 if nothing happened.
+ */
+export function developPlayer(
+  rng: Rng,
+  p: Player,
+  perf: GamePerformance | undefined,
+  won: boolean,
+  now: number,
+): number {
+  const d = BALANCE.development;
+  let gainWeight = d.gainChance[p.potential] ?? 0.05;
+  let lossWeight = d.lossChance[p.potential] ?? 0.05;
+
+  if (p.pos === 'P') {
+    if (won) gainWeight *= 1 + d.perfPitcherWinWeight;
+    else lossWeight *= 1 + d.perfPitcherWinWeight * 0.5;
+  } else if (perf && perf.atBats > 0) {
+    gainWeight *= 1 + perf.hits * d.perfHitWeight + perf.homers * d.perfHomerWeight;
+    if (perf.hits === 0) lossWeight *= 1 + d.hitlessGameLossWeight;
+  }
+
+  const roll = rng.next();
+  let frac = 0;
+  if (roll < gainWeight) {
+    frac = rng.range(d.gainFracMin, d.gainFracMax) * (d.gainPotentialMult[p.potential] ?? 1);
+  } else if (roll < gainWeight + lossWeight) {
+    frac = -rng.range(d.lossFracMin, d.lossFracMax);
+  } else {
+    return 0;
+  }
+
+  p.bat *= 1 + frac;
+  p.arm *= 1 + frac;
+  p.spd *= 1 + frac;
+  p.devDelta = frac;
+  p.devAt = now;
+  return frac;
 }

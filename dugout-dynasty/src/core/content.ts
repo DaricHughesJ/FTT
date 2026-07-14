@@ -56,6 +56,28 @@ export const BALANCE = {
   scoutCooldownReducePerLevel: 0.04, // -4%/level, floor 30%
   scoutCostFrac: 0.5, // scout cost = frac * current win income
 
+  // Player development: after each game every roster player rolls to grow or
+  // decline. Entirely random, but weighted — potential sets the baseline,
+  // and a hot game (hits/homers, or a pitcher win) tilts the odds and the
+  // size of the gain upward.
+  development: {
+    potentialWeights: { C: 0.5, B: 0.3, A: 0.15, S: 0.05 } as Record<string, number>,
+    gainChance: { C: 0.05, B: 0.08, A: 0.12, S: 0.17 } as Record<string, number>,
+    lossChance: { C: 0.06, B: 0.05, A: 0.04, S: 0.03 } as Record<string, number>,
+    // each hit adds this much relative weight to the gain roll; homers more
+    perfHitWeight: 0.35,
+    perfHomerWeight: 0.9,
+    perfPitcherWinWeight: 0.5,
+    hitlessGameLossWeight: 0.5, // an 0-for game tilts toward decline
+    gainFracMin: 0.005,
+    gainFracMax: 0.03, // gains scale with current stats (multiplicative)
+    gainPotentialMult: { C: 0.8, B: 1, A: 1.25, S: 1.6 } as Record<string, number>,
+    lossFracMin: 0.004,
+    lossFracMax: 0.015,
+  },
+  // trade/worth value multiplier by a player's potential ceiling
+  potentialValueMult: { C: 0.9, B: 1, A: 1.15, S: 1.4 } as Record<string, number>,
+
   // Prospects
   maxProspects: 6,
   prospectDevHours: { C: 0.4, B: 1, A: 2.5, S: 5 } as Record<string, number>,

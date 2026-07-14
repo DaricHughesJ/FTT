@@ -54,8 +54,19 @@ export function clearSave(store: SaveStore = localSaveStore): void {
   store.remove(KEY);
 }
 
-/** Bring older saves up to the current schema. v1 is the first version. */
+/** Bring older saves up to the current schema. */
 function migrate(state: GameState): GameState {
-  // future: if (state.version === 1) { ...; state.version = 2; }
+  if (state.version === 1) {
+    // v2 added potential-based development; give existing players a ceiling
+    const grades = ['C', 'C', 'B', 'B', 'B', 'A'] as const;
+    const assign = (p: { potential?: string }) => {
+      if (!p.potential) p.potential = grades[Math.floor(Math.random() * grades.length)];
+    };
+    state.roster.forEach(assign);
+    state.season.aiTeams.forEach((t) => t.roster.forEach(assign));
+    if (state.incomingOffer) assign(state.incomingOffer.offersPlayer);
+    state.currentGame = null; // old shape lacks the box score; re-sim it
+    state.version = 2;
+  }
   return state;
 }

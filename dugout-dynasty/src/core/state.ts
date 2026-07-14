@@ -2,6 +2,7 @@ import { Rng } from './rng';
 import { BALANCE, MILESTONES, TOP_TIER } from './content';
 import {
   callUpProspect,
+  developPlayer,
   developProspect,
   generateProspect,
   generateRoster,
@@ -41,7 +42,7 @@ import { openPack, packById, scoutActionGrade } from './packs';
 import { newOfferBook, OfferBookState, purchaseOffer, updateOffers } from './offers';
 import { CareerStats, newCareerStats } from './stats';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface GameState {
   version: number;
@@ -234,6 +235,12 @@ export class Engine {
     s.career.hr += result.homeHr;
     s.career.runs += result.homeRuns;
     s.season.gameIndex++;
+
+    // random, performance-weighted development roll for every roster player
+    const perf = result.homePerf ?? {};
+    for (const p of s.roster) {
+      developPlayer(rng, p, perf[p.id], won, now);
+    }
 
     playAiMatchday(rng, s.season, opponentIdx);
 
