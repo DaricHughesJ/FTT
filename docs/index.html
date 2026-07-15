@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>TFT Tactician</title>
+  <meta name="description" content="TFT coaching companion: Set 17 meta comps, item builder, stage-by-stage guide, and match analysis." />
+  <meta name="theme-color" content="#0d0d0d" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Tactician" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>TFT Tactician</h1>
+    <span class="patch" id="patch-label"></span>
+  </header>
+
+  <main>
+    <!-- Coach -->
+    <section class="view" id="view-coach">
+      <h2>Stage-by-stage coach</h2>
+      <p class="lede">Pick your current stage — econ, leveling, and what to focus on right now.</p>
+      <div class="seg" id="stage-seg"></div>
+      <div id="stage-detail"></div>
+      <h2>Econ rules that win games</h2>
+      <div id="econ-rules"></div>
+      <h2>Augment strategy</h2>
+      <div id="augment-guide"></div>
+    </section>
+
+    <!-- Comps -->
+    <section class="view" id="view-comps">
+      <h2>Meta comps</h2>
+      <p class="lede">Patch snapshot — tap a comp for items, game plan, and positioning.</p>
+      <div id="comps-list"></div>
+    </section>
+
+    <!-- Items -->
+    <section class="view" id="view-items">
+      <h2>Item builder</h2>
+      <p class="lede">Tap two components to see what they make and when to build it.</p>
+      <div class="comp-grid" id="component-grid"></div>
+      <div id="combo-result"></div>
+      <h2>Best-in-slot by carry type</h2>
+      <div id="item-archetypes"></div>
+    </section>
+
+    <!-- Traits -->
+    <section class="view" id="view-traits">
+      <h2>Origins</h2>
+      <div id="traits-origins"></div>
+      <h2>Classes</h2>
+      <div id="traits-classes"></div>
+    </section>
+
+    <!-- Analysis -->
+    <section class="view" id="view-analysis">
+      <h2>Match analysis</h2>
+      <div id="analysis-status"></div>
+      <div id="analysis-results"></div>
+
+      <h2>Riot API setup</h2>
+      <p class="lede">Uses Riot's official TFT API. You need a (free) API key and the small proxy from this repo — see the README for the 5-minute setup.</p>
+      <div class="field"><label>Riot ID — game name</label><input id="f-name" placeholder="e.g. Faker" autocapitalize="off" /></div>
+      <div class="field"><label>Riot ID — tagline (after the #)</label><input id="f-tag" placeholder="e.g. NA1" autocapitalize="off" /></div>
+      <div class="field"><label>Region</label><select id="f-region"></select></div>
+      <div class="field"><label>Proxy URL (your Cloudflare Worker)</label><input id="f-proxy" placeholder="https://your-worker.workers.dev" autocapitalize="off" inputmode="url" /></div>
+      <div class="field"><label>Riot API key (optional if stored in the worker)</label><input id="f-key" placeholder="RGAPI-…" autocapitalize="off" /></div>
+      <button class="btn" id="btn-fetch">Fetch my matches</button>
+      <div style="height:8px"></div>
+      <button class="btn secondary" id="btn-demo">Show demo data</button>
+      <p class="note">Settings are stored only on this device. Get a key at <a href="https://developer.riotgames.com" target="_blank" rel="noopener">developer.riotgames.com</a>.</p>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button id="tab-coach"><span class="ico">🎓</span>Coach</button>
+    <button id="tab-comps"><span class="ico">⚔️</span>Comps</button>
+    <button id="tab-items"><span class="ico">🛠️</span>Items</button>
+    <button id="tab-traits"><span class="ico">✨</span>Traits</button>
+    <button id="tab-analysis"><span class="ico">📊</span>Stats</button>
+  </nav>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
