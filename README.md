@@ -47,11 +47,26 @@ you tap the right one. Everything else (gold, level, stage, health) you type
 
 **Calibrate once.** Screen geometry differs per device, so if the outlined
 box doesn't sit on your 5 shop cards, tap **Adjust shop region**, drag it
-into place, and it's remembered from then on.
+into place, and it's remembered from then on. The starting box is sized from
+your screenshot's aspect ratio (an iPhone 15 Pro Max at 19.5:9 puts the
+cards in a narrower band than a 16:9 phone).
 
-**One iOS limitation:** iOS doesn't let a web app receive the system Share
-sheet, so the flow is *open the app → Choose a screenshot → pick it from
-Photos*, rather than sharing directly into it from the screenshot preview.
+### Getting screenshots in automatically
+
+iOS gives a web app **no** photo-library access and **no** Share Sheet
+target, so the app can't go and find your screenshots. Instead something
+outside the app pushes them in — pick whichever suits you:
+
+| | Taps per scan | Setup |
+|---|---|---|
+| **Action Button → relay** | none | KV namespace + Shortcut ([guide](proxy/README.md)) |
+| **Action Button → clipboard** | one Paste (+ iOS confirm) | Shortcut only |
+| **Photo picker** | ~4 | none |
+
+The relay path: a Shortcut on your Action Button screenshots and uploads to
+your Cloudflare Worker; the app pulls it the moment you switch across, so
+the shop is already read when you arrive. Configure it under **Scan →
+Automatic capture**, which prints the exact URL for the Shortcut.
 
 ## Setup
 
@@ -89,7 +104,8 @@ Then run the test suite, which checks the tables are internally consistent
 matching) and that the recommendations still behave:
 
 ```
-node tests/odds.test.mjs
+node tests/odds.test.mjs      # math + patch-data consistency
+node tests/worker.test.mjs    # relay + Riot proxy, against a mock KV
 ```
 
 Current snapshot: **Set 17 · Space Gods · patch 17.7** (July 2026). Set 18
@@ -110,13 +126,14 @@ docs/               the PWA (GitHub Pages serves this)
   js/roster.js      champions by cost, shop odds, pool sizes, XP table
   js/odds.js        the decision engine (probability + roll/level/save)
   js/vision.js      screenshot reading (shop bar + cost-colour detection)
+  js/relay.js       automatic intake (Shortcut relay + clipboard paste)
   js/scan.js        Scan tab UI
   js/app.js         tabs + rendering
   js/analysis.js    Riot API client + SVG charts
   sw.js             offline caching
   manifest.webmanifest, icons/
-proxy/              Cloudflare Worker that adds CORS to Riot's API
-tests/odds.test.mjs 44 checks on the math and the patch data
+proxy/              Cloudflare Worker: Riot API CORS + screenshot relay
+tests/              67 checks — odds math, patch data, worker endpoints
 ```
 
 *(This repo previously held a Rocket League BakkesMod plugin — those files

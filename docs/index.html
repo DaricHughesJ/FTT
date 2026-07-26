@@ -27,9 +27,32 @@
       <h2>Scan your game</h2>
       <p class="lede">Screenshot your match, load it here, and get the mathematically best play for your exact gold and level.</p>
 
-      <label class="btn" for="scan-file">Choose a screenshot</label>
+      <div class="row-btns">
+        <label class="btn" for="scan-file">Choose a screenshot</label>
+        <button class="btn secondary" id="btn-paste">Paste screenshot</button>
+      </div>
       <input type="file" id="scan-file" accept="image/*" hidden />
       <div id="scan-status"></div>
+
+      <details class="auto-box" id="auto-box">
+        <summary>Automatic capture — press the Action Button mid-game</summary>
+        <p class="note">iOS won't let a web app read your photo library or receive the Share
+        Sheet, so the screenshot has to be pushed <em>to</em> the app. An iOS Shortcut on your
+        Action Button uploads it to your Cloudflare Worker, and the app loads it the moment you
+        switch across — no taps in the app at all. Full setup is in <code>proxy/README.md</code>.</p>
+        <div class="field"><label for="r-url">Worker URL</label>
+          <input id="r-url" placeholder="https://your-worker.workers.dev" inputmode="url" autocapitalize="off" /></div>
+        <div class="field"><label for="r-key">Relay key (a shared secret)</label>
+          <div class="row-btns">
+            <input id="r-key" placeholder="tap Generate" autocapitalize="off" />
+            <button class="btn secondary" id="btn-genkey">Generate</button>
+          </div></div>
+        <label class="check"><input type="checkbox" id="r-enabled" /> Auto-load a waiting screenshot when I open the app</label>
+        <button class="btn secondary" id="btn-relay-check">Check for a new screenshot now</button>
+        <div id="relay-status"></div>
+        <div id="relay-recipe"></div>
+      </details>
+
       <div id="scan-preview"></div>
 
       <h2>Your shop</h2>

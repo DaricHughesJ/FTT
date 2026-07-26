@@ -192,6 +192,26 @@ label.btn { text-align: center; cursor: pointer; }
 .row-btns { display: flex; gap: 8px; margin-top: 10px; }
 .row-btns .btn { flex: 1; padding: 10px 12px; font-size: 14px; }
 
+.auto-box { background: var(--surface); border: 1px solid var(--hairline);
+  border-radius: var(--radius); padding: 12px 14px; margin-top: 10px; }
+.auto-box > summary { font-size: 14px; font-weight: 700; cursor: pointer; list-style: none; }
+.auto-box > summary::-webkit-details-marker { display: none; }
+.auto-box > summary::before { content: "▶ "; color: var(--muted); font-size: 11px; }
+.auto-box[open] > summary::before { content: "▼ "; }
+.auto-box > summary + .note { margin-top: 8px; }
+.auto-box .field { margin-top: 10px; }
+.auto-box .row-btns { margin-top: 0; gap: 8px; }
+/* min-width:0 lets the input actually shrink; the base .btn is width:100%,
+   which would otherwise squeeze it to nothing and push the button off-screen. */
+.auto-box .row-btns input { flex: 1 1 auto; min-width: 0; }
+.auto-box .row-btns .btn { flex: 0 0 auto; width: auto; padding: 11px 16px; }
+label.check { display: flex; align-items: center; gap: 9px; font-size: 13.5px;
+  color: var(--ink-2); margin: 12px 0; }
+label.check input { width: 19px; height: 19px; accent-color: var(--accent); }
+.endpoint { margin-top: 6px; background: var(--page); border: 1px solid var(--baseline);
+  border-radius: 8px; padding: 9px 10px; font-size: 12px; color: var(--gold);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+
 .shot-wrap { position: relative; margin-top: 12px; border-radius: 10px; overflow: hidden;
   border: 1px solid var(--hairline); line-height: 0; }
 .shot-wrap img { width: 100%; height: auto; display: block; }

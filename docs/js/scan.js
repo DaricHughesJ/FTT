@@ -7,6 +7,10 @@ import {
   imageFromFile, toCanvas, readShop, autoDetectShopBar, defaultRegionFor,
   loadCalibration, saveCalibration, resetCalibration, DEFAULT_REGION,
 } from "./vision.js";
+import {
+  loadRelay, saveRelay, makeRelayKey, relayEndpoint, fetchLatestShot,
+  imageFromClipboard, canReadClipboard,
+} from "./relay.js";
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -25,6 +29,7 @@ const state = {
   level: 8, gold: 50, xp: 0, stage: 4, health: 70,
   target: "", owned: 0, contested: "none", need: 1,
   compId: COMPS[0]?.id || null,
+  relay: loadRelay(),
 };
 
 function persist() {
@@ -41,13 +46,13 @@ function restore() {
 // ---------------------------------------------------------------------------
 // Screenshot handling
 // ---------------------------------------------------------------------------
-async function handleFile(file) {
+async function handleFile(file, { quiet = false } = {}) {
   const status = $("#scan-status");
   if (!file || !file.type.startsWith("image/")) {
     status.innerHTML = `<div class="error-box">That file isn't an image.</div>`;
     return;
   }
-  status.innerHTML = `<div class="note">Reading screenshot…</div>`;
+  if (!quiet) status.innerHTML = `<div class="note">Reading screenshot…</div>`;
   try {
     const img = await imageFromFile(file);
     state.canvas = toCanvas(img);
@@ -69,6 +74,59 @@ async function handleFile(file) {
   } catch (err) {
     status.innerHTML = `<div class="error-box">${esc(err.message)}</div>`;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Automatic intake: relay polling + clipboard paste
+// ---------------------------------------------------------------------------
+let relayBusy = false;
+
+async function checkRelay({ manual = false } = {}) {
+  const cfg = state.relay;
+  const status = $("#relay-status");
+  if (!relayEndpoint(cfg)) {
+    if (manual) status.innerHTML = `<div class="error-box">Add your Worker URL and a relay key first.</div>`;
+    return;
+  }
+  if (relayBusy || (!manual && !cfg.enabled)) return;
+  relayBusy = true;
+  if (manual) status.innerHTML = `<div class="note">Checking the relay…</div>`;
+  try {
+    const shot = await fetchLatestShot(cfg);
+    if (!shot) {
+      status.innerHTML = manual
+        ? `<div class="note">Nothing waiting. Press your Action Button in-game, then check again.</div>`
+        : "";
+      return;
+    }
+    cfg.lastTs = shot.ts;
+    saveRelay(cfg);
+    await handleFile(shot.file, { quiet: true });
+    const when = new Date(shot.ts).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    status.innerHTML = `<div class="note">Loaded the screenshot your Shortcut sent at ${esc(when)}.</div>`;
+  } catch (err) {
+    status.innerHTML = `<div class="error-box">${esc(err.message)}</div>`;
+  } finally {
+    relayBusy = false;
+  }
+}
+
+function renderRelayRecipe() {
+  const endpoint = relayEndpoint(state.relay);
+  const el = $("#relay-recipe");
+  if (!endpoint) { el.innerHTML = ""; return; }
+  el.innerHTML = `
+    <div class="card" style="margin-top:10px">
+      <h3>Your Shortcut</h3>
+      <div class="body">Shortcuts app → new shortcut with these three actions, then
+        Settings → Action Button → Shortcut → pick it.
+        <div class="row"><strong>1.</strong> Take Screenshot</div>
+        <div class="row"><strong>2.</strong> Resize Image — width 1400</div>
+        <div class="row"><strong>3.</strong> Get Contents of URL — Method <strong>POST</strong>,
+          Request Body <strong>File</strong>, URL:</div>
+        <div class="endpoint">${esc(endpoint)}</div>
+      </div>
+    </div>`;
 }
 
 function rescan() {
@@ -290,6 +348,43 @@ export function initScan() {
     const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith("image/"));
     if (item) handleFile(item.getAsFile());
   });
+
+  // Paste path — no server needed, but iOS asks for confirmation each time.
+  const pasteBtn = $("#btn-paste");
+  if (!canReadClipboard()) pasteBtn.hidden = true;
+  pasteBtn.addEventListener("click", async () => {
+    try {
+      handleFile(await imageFromClipboard());
+    } catch (err) {
+      $("#scan-status").innerHTML = `<div class="error-box">${esc(err.message)}</div>`;
+    }
+  });
+
+  // Relay path — fully automatic once the Shortcut is set up.
+  const rUrl = $("#r-url"), rKey = $("#r-key"), rEnabled = $("#r-enabled");
+  rUrl.value = state.relay.url || "";
+  rKey.value = state.relay.key || "";
+  rEnabled.checked = !!state.relay.enabled;
+  if (relayEndpoint(state.relay)) $("#auto-box").open = true;
+
+  const syncRelay = () => {
+    state.relay = { ...state.relay, url: rUrl.value.trim(), key: rKey.value.trim(), enabled: rEnabled.checked };
+    saveRelay(state.relay);
+    renderRelayRecipe();
+  };
+  rUrl.addEventListener("input", syncRelay);
+  rKey.addEventListener("input", syncRelay);
+  rEnabled.addEventListener("change", () => { syncRelay(); if (rEnabled.checked) checkRelay(); });
+  $("#btn-genkey").addEventListener("click", () => { rKey.value = makeRelayKey(); syncRelay(); });
+  $("#btn-relay-check").addEventListener("click", () => checkRelay({ manual: true }));
+  renderRelayRecipe();
+
+  // Switching back to the app is the cue to pull whatever is waiting.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") checkRelay();
+  });
+  window.addEventListener("focus", () => checkRelay());
+  checkRelay();
 
   // Numeric state controls
   const numFields = [
