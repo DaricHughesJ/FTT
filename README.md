@@ -70,6 +70,9 @@ Automatic capture**, which prints the exact URL for the Shortcut.
 
 ## Setup
 
+**→ [SETUP.md](SETUP.md) is the step-by-step walkthrough.** The short
+version follows.
+
 ### 1. Host the app (free, one-time)
 
 The app is static files in [`docs/`](docs/). On GitHub:
