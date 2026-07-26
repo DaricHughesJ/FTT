@@ -4,8 +4,8 @@ import { CHAMPIONS, ALL_CHAMPIONS, COST_COLORS, costOf } from "./roster.js";
 import { recommend, evaluate, shopAdvice, pct, CONTEST_LEVELS } from "./odds.js";
 import { COMPS } from "./data.js";
 import {
-  imageFromFile, toCanvas, readShop, autoDetectShopBar,
-  loadCalibration, saveCalibration, resetCalibration,
+  imageFromFile, toCanvas, readShop, autoDetectShopBar, defaultRegionFor,
+  loadCalibration, saveCalibration, resetCalibration, DEFAULT_REGION,
 } from "./vision.js";
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -13,7 +13,10 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 const STATE_KEY = "ftt-scan-state";
 
 const state = {
-  region: loadCalibration(),
+  // Until a screenshot arrives we don't know the device aspect; once one
+  // loads, an un-calibrated region is re-derived from its dimensions.
+  region: loadCalibration() ?? { ...DEFAULT_REGION },
+  calibrated: !!loadCalibration(),
   canvas: null,
   imageURL: null,
   slots: [],
@@ -51,16 +54,18 @@ async function handleFile(file) {
     if (state.imageURL) URL.revokeObjectURL(state.imageURL);
     state.imageURL = state.canvas.toDataURL("image/jpeg", 0.85);
 
-    const auto = autoDetectShopBar(state.canvas, state.region);
+    // Without a hand-calibrated box, start from one sized to this device's
+    // aspect ratio rather than a 16:9 assumption.
+    const base = state.calibrated
+      ? state.region
+      : defaultRegionFor(state.canvas.width, state.canvas.height);
+    const auto = autoDetectShopBar(state.canvas, base);
     state.autoDetected = !!auto.auto;
-    if (auto.auto) {
-      state.region = { x: auto.x, y: auto.y, w: auto.w, h: auto.h };
-      saveCalibration(state.region);
-    }
+    state.region = { x: auto.x, y: auto.y, w: auto.w, h: auto.h };
     rescan();
     status.innerHTML = state.autoDetected
-      ? `<div class="note">Found the shop bar automatically. If the boxes below don't line up with your 5 cards, tap <strong>Adjust shop region</strong>.</div>`
-      : `<div class="note">Couldn't locate the shop bar confidently — using your saved region. Tap <strong>Adjust shop region</strong> to line it up once; it's remembered after that.</div>`;
+      ? `<div class="note">Found the shop bar automatically. If the outlined boxes don't line up with your 5 cards, tap <strong>Adjust shop region</strong> — it's remembered after that.</div>`
+      : `<div class="note">Couldn't pin down the shop bar automatically, so this is a starting box sized for your screen. Tap <strong>Adjust shop region</strong> to line it up once; it's remembered after that.</div>`;
   } catch (err) {
     status.innerHTML = `<div class="error-box">${esc(err.message)}</div>`;
   }
@@ -120,7 +125,8 @@ function renderPreview() {
     render();
   });
   $("#btn-reset-region").addEventListener("click", () => {
-    state.region = resetCalibration();
+    state.region = resetCalibration(state.canvas?.width, state.canvas?.height);
+    state.calibrated = false;
     rescan();
   });
   if (state.calibrating) bindRegionDrag();
@@ -167,6 +173,7 @@ function bindRegionDrag() {
     if (!mode) return;
     mode = null;
     saveCalibration(state.region);
+    state.calibrated = true;
     rescan();
   };
 

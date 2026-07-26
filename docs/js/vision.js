@@ -18,23 +18,44 @@ import { COST_COLORS } from "./roster.js";
 
 const CAL_KEY = "ftt-calibration";
 
-// Default shop-bar box as fractions of image width/height. Tuned for TFT
-// mobile in landscape, where the shop occupies the bottom strip.
+// Reference shop-bar box, as fractions of image width/height, for a 16:9
+// landscape screenshot. TFT's UI scales with screen HEIGHT, so on a taller
+// aspect ratio the same physical shop row covers proportionally less width —
+// defaultRegionFor() corrects for that instead of assuming one device.
+export const REFERENCE_ASPECT = 16 / 9;
 export const DEFAULT_REGION = { x: 0.205, y: 0.815, w: 0.59, h: 0.155 };
 
+/**
+ * Starting shop-bar box for a screenshot of the given pixel size.
+ * iPhone 15 Pro Max screenshots are 2796x1290 (19.5:9), which lands the
+ * cards in the middle ~48% of the width rather than the ~59% a 16:9 phone
+ * would show.
+ */
+export function defaultRegionFor(width, height) {
+  if (!width || !height) return { ...DEFAULT_REGION };
+  const aspect = width / height;
+  // Portrait or square screenshots aren't a landscape TFT client — don't
+  // pretend to know where the shop is.
+  if (aspect < 1.2) return { ...DEFAULT_REGION };
+  const w = Math.min(0.95, DEFAULT_REGION.w * (REFERENCE_ASPECT / aspect));
+  return { x: (1 - w) / 2, y: DEFAULT_REGION.y, w, h: DEFAULT_REGION.h };
+}
+
+/** Saved calibration, or null when the user hasn't adjusted one yet. */
 export function loadCalibration() {
   try {
     const saved = JSON.parse(localStorage.getItem(CAL_KEY));
     if (saved && ["x", "y", "w", "h"].every((k) => typeof saved[k] === "number")) return saved;
-  } catch { /* fall through to default */ }
-  return { ...DEFAULT_REGION };
+  } catch { /* no usable calibration */ }
+  return null;
 }
 export function saveCalibration(region) {
   localStorage.setItem(CAL_KEY, JSON.stringify(region));
 }
-export function resetCalibration() {
+/** Forget the saved box and fall back to the aspect-derived default. */
+export function resetCalibration(width, height) {
   localStorage.removeItem(CAL_KEY);
-  return { ...DEFAULT_REGION };
+  return defaultRegionFor(width, height);
 }
 
 export function imageFromFile(file) {
@@ -205,7 +226,9 @@ export function autoDetectShopBar(canvas, fallback) {
   const rows = H - top;
   if (rows < 8) return { ...fallback, auto: false };
   const stripe = ctx.getImageData(0, top, W, rows).data;
-  const step = Math.max(1, Math.round(W / 220));
+  // Sample finely enough that a thin card frame still registers — on a
+  // narrow-card device the frame is only a few pixels wide.
+  const step = Math.max(1, Math.round(W / 300));
   const perRow = Math.ceil(W / step);
 
   const rowScore = new Array(rows).fill(0);
@@ -230,7 +253,8 @@ export function autoDetectShopBar(canvas, fallback) {
   // edges. A high threshold would find just the nameplate strip and reject
   // it as too thin.
   const threshold = Math.max(perRow * 0.03, maxScore * 0.18);
-  let best = null, run = null;
+  const runs = [];
+  let run = null;
   for (let y = 0; y <= rows; y++) {
     const on = y < rows && rowScore[y] >= threshold;
     if (on) {
@@ -238,11 +262,27 @@ export function autoDetectShopBar(canvas, fallback) {
       run.total += rowScore[y];
       run.end = y;
     } else if (run) {
-      if (!best || run.total > best.total) best = run;
+      runs.push(run);
       run = null;
     }
   }
-  if (!best) return { ...fallback, auto: false };
+  if (!runs.length) return { ...fallback, auto: false };
+
+  // Rows through the middle of a card only catch its thin left/right frame
+  // edges, so one shop bar shows up as several runs split by short dips.
+  // Stitch runs separated by a small gap back into a single band.
+  const maxGap = Math.max(2, Math.round(H * 0.035));
+  const merged = [runs[0]];
+  for (const r of runs.slice(1)) {
+    const prev = merged[merged.length - 1];
+    if (r.start - prev.end <= maxGap) {
+      prev.end = r.end;
+      prev.total += r.total;
+    } else {
+      merged.push(r);
+    }
+  }
+  const best = merged.reduce((a, b) => (b.total > a.total ? b : a));
 
   const height = (best.end - best.start + 1) / H;
   if (height < MIN_BAR_H || height > MAX_BAR_H) return { ...fallback, auto: false };
