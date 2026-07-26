@@ -59,7 +59,7 @@ outside the app pushes them in — pick whichever suits you:
 
 | | Taps per scan | Setup |
 |---|---|---|
-| **Action Button → relay** | none | KV namespace + Shortcut ([guide](proxy/README.md)) |
+| **Action Button → relay** | none | KV namespace + Shortcut ([guide](docs/worker/README.md)) |
 | **Action Button → clipboard** | one Paste (+ iOS confirm) | Shortcut only |
 | **Photo picker** | ~4 | none |
 
@@ -91,7 +91,7 @@ fetching works offline.
 ### 3. (Optional) Connect your Riot account
 
 The Stats tab ships with demo data. For your real matches, deploy the
-5-minute proxy in [`proxy/`](proxy/README.md) and paste its URL plus your
+5-minute worker in [`docs/worker/`](docs/worker/README.md) and paste its URL plus your
 Riot ID into the app's Stats settings.
 
 ## Updating for new patches
@@ -135,7 +135,7 @@ docs/               the PWA (GitHub Pages serves this)
   js/analysis.js    Riot API client + SVG charts
   sw.js             offline caching
   manifest.webmanifest, icons/
-proxy/              Cloudflare Worker: Riot API CORS + screenshot relay
+  worker/           Cloudflare Worker: Riot API CORS + screenshot relay
 tests/              67 checks — odds math, patch data, worker endpoints
 ```
 

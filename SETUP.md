@@ -74,7 +74,7 @@ to the app.
 2. **Compute (Workers) → Create → Workers → Create Worker**
 3. Name it (e.g. `ftt-proxy`) → **Deploy** the starter
 4. **Edit code**, delete what's there, paste the entire contents of
-   [`proxy/cloudflare-worker.js`](proxy/cloudflare-worker.js) → **Deploy**
+   [`docs/worker/cloudflare-worker.js`](docs/worker/cloudflare-worker.js) (or tap **Copy worker code** in the app) → **Deploy**
 5. Copy your worker URL — `https://ftt-proxy.<something>.workers.dev`
 
 ### 3.2 Give it somewhere to put screenshots

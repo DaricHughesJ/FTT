@@ -53,7 +53,7 @@ async function handleRelay(request, env, key) {
   }
   if (!env.SHOTS) {
     return new Response(
-      "No KV namespace bound. Create one and bind it as SHOTS (see proxy/README.md).",
+      "No KV namespace bound. Create one and bind it as SHOTS (see SETUP.md).",
       { status: 501, headers: cors(env) });
   }
   const imgKey = `img:${key}`, tsKey = `ts:${key}`;

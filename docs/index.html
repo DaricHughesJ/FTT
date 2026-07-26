@@ -39,7 +39,16 @@
         <p class="note">iOS won't let a web app read your photo library or receive the Share
         Sheet, so the screenshot has to be pushed <em>to</em> the app. An iOS Shortcut on your
         Action Button uploads it to your Cloudflare Worker, and the app loads it the moment you
-        switch across — no taps in the app at all. Full setup is in <code>proxy/README.md</code>.</p>
+        switch across — no taps in the app at all. Full setup is in <code>SETUP.md</code>.</p>
+        <div class="worker-code">
+          <div class="row-btns">
+            <button class="btn secondary" id="btn-copy-worker">Copy worker code</button>
+            <button class="btn secondary" id="btn-show-worker">Show</button>
+          </div>
+          <div id="worker-copy-status"></div>
+          <pre id="worker-source" hidden></pre>
+        </div>
+
         <div class="field"><label for="r-url">Worker URL</label>
           <input id="r-url" placeholder="https://your-worker.workers.dev" inputmode="url" autocapitalize="off" /></div>
         <div class="field"><label for="r-key">Relay key (a shared secret)</label>

@@ -45,7 +45,7 @@ export async function fetchLatestShot(cfg, { signal } = {}) {
   if (res.status === 204) return null;
   if (!res.ok) {
     const detail = res.status === 501
-      ? "The worker has no KV namespace bound — see proxy/README.md."
+      ? "The worker has no KV namespace bound — see the setup guide."
       : `Relay returned HTTP ${res.status}.`;
     throw new Error(detail);
   }

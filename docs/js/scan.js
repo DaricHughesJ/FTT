@@ -111,6 +111,35 @@ async function checkRelay({ manual = false } = {}) {
   }
 }
 
+// Safari drops the user-gesture context across an await, so the worker
+// source is fetched up front and copied synchronously on tap.
+const WORKER_SRC_URL = "./worker/cloudflare-worker.js";
+let workerSource = null;
+
+function prefetchWorkerSource() {
+  fetch(WORKER_SRC_URL)
+    .then((r) => (r.ok ? r.text() : null))
+    .then((text) => { workerSource = text; })
+    .catch(() => { workerSource = null; });
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  // Fallback for browsers without the async clipboard API.
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+  document.body.appendChild(ta);
+  ta.select();
+  const ok = document.execCommand?.("copy");
+  ta.remove();
+  if (!ok) throw new Error("Copy failed");
+}
+
 function renderRelayRecipe() {
   const endpoint = relayEndpoint(state.relay);
   const el = $("#relay-recipe");
@@ -125,8 +154,19 @@ function renderRelayRecipe() {
         <div class="row"><strong>3.</strong> Get Contents of URL — Method <strong>POST</strong>,
           Request Body <strong>File</strong>, URL:</div>
         <div class="endpoint">${esc(endpoint)}</div>
+        <button class="btn secondary" id="btn-copy-endpoint" style="margin-top:8px">Copy this URL</button>
+        <div id="endpoint-copy-status"></div>
       </div>
     </div>`;
+  $("#btn-copy-endpoint").addEventListener("click", async () => {
+    const out = $("#endpoint-copy-status");
+    try {
+      await copyText(endpoint);
+      out.innerHTML = `<div class="note ok">Copied — paste it into the Shortcut's URL field.</div>`;
+    } catch {
+      out.innerHTML = `<div class="note">Couldn't copy automatically — long-press the URL above to select it.</div>`;
+    }
+  });
 }
 
 function rescan() {
@@ -358,6 +398,42 @@ export function initScan() {
     } catch (err) {
       $("#scan-status").innerHTML = `<div class="error-box">${esc(err.message)}</div>`;
     }
+  });
+
+  // Worker source — copy straight into the Cloudflare editor.
+  prefetchWorkerSource();
+  $("#btn-copy-worker").addEventListener("click", async () => {
+    const out = $("#worker-copy-status");
+    if (!workerSource) {
+      out.innerHTML = `<div class="note">Fetching the code…</div>`;
+      try {
+        const res = await fetch(WORKER_SRC_URL);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        workerSource = await res.text();
+      } catch {
+        out.innerHTML = `<div class="error-box">Couldn't load the worker code. Open <code>docs/worker/cloudflare-worker.js</code> in the repo instead.</div>`;
+        return;
+      }
+    }
+    try {
+      await copyText(workerSource);
+      const lines = workerSource.trimEnd().split("\n").length;
+      out.innerHTML = `<div class="note ok">Copied ${lines} lines. Paste it into the Cloudflare editor, replacing everything there.</div>`;
+    } catch {
+      out.innerHTML = `<div class="note">Couldn't copy automatically — tap <strong>Show</strong> and select the code by hand.</div>`;
+    }
+  });
+
+  $("#btn-show-worker").addEventListener("click", async () => {
+    const pre = $("#worker-source"), btn = $("#btn-show-worker");
+    if (!pre.hidden) { pre.hidden = true; btn.textContent = "Show"; return; }
+    if (!workerSource) {
+      try { workerSource = await (await fetch(WORKER_SRC_URL)).text(); }
+      catch { $("#worker-copy-status").innerHTML = `<div class="error-box">Couldn't load the worker code.</div>`; return; }
+    }
+    pre.textContent = workerSource;
+    pre.hidden = false;
+    btn.textContent = "Hide";
   });
 
   // Relay path — fully automatic once the Shortcut is set up.

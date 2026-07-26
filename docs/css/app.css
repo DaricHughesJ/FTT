@@ -258,3 +258,11 @@ table.data tr.best td { color: var(--gold); font-weight: 700; }
   .kpi-row { grid-template-columns: repeat(4, 1fr); }
   .state-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+.worker-code { margin-top: 10px; }
+.worker-code pre { margin-top: 8px; max-height: 300px; overflow: auto;
+  background: var(--page); border: 1px solid var(--baseline); border-radius: 8px;
+  padding: 10px; font-size: 11px; line-height: 1.45; color: var(--ink-2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  -webkit-overflow-scrolling: touch; }
+.note.ok { color: var(--good); }

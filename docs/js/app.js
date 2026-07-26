@@ -163,7 +163,7 @@ async function runAnalysis(demo) {
     };
     saveSettings(s);
     if (!s.gameName || !s.tagLine) { status.innerHTML = `<div class="error-box">Enter your Riot ID (name + tag).</div>`; return; }
-    if (!s.proxy) { status.innerHTML = `<div class="error-box">A proxy URL is required — Riot's API blocks direct browser calls. Deploy the free Cloudflare Worker in this repo's <strong>proxy/</strong> folder (5&nbsp;min), then paste its URL here.</div>`; return; }
+    if (!s.proxy) { status.innerHTML = `<div class="error-box">A proxy URL is required — Riot's API blocks direct browser calls. Deploy the free Cloudflare Worker in the Cloudflare Worker (5&nbsp;min, see SETUP.md), then paste its URL here.</div>`; return; }
     status.innerHTML = `<div class="note">Fetching matches… (20 matches ≈ 21 API calls; dev keys may rate-limit briefly)</div>`;
     try {
       matches = await fetchMatches({ ...s, count: 20 });

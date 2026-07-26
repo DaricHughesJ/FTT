@@ -1,5 +1,5 @@
 // Exercises the deployed Worker code against a mock KV namespace.
-import worker from "../proxy/cloudflare-worker.js";
+import worker from "../docs/worker/cloudflare-worker.js";
 
 let pass = 0, fail = 0;
 const check = (name, cond, detail = "") => {

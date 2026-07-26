@@ -1,7 +1,7 @@
 // Offline-first service worker: precache the app shell, network-first for
 // same-origin requests (so updates land), cache-fallback when offline.
 // API calls (the Riot proxy) are never cached.
-const CACHE = "ftt-v3";
+const CACHE = "ftt-v4";
 const SHELL = [
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ const SHELL = [
   "./js/vision.js",
   "./js/scan.js",
   "./js/relay.js",
+  "./worker/cloudflare-worker.js",
   "./manifest.webmanifest",
   "./icons/icon-180.png",
   "./icons/icon-192.png",
