@@ -22,6 +22,42 @@
   </header>
 
   <main>
+    <!-- Scan -->
+    <section class="view" id="view-scan">
+      <h2>Scan your game</h2>
+      <p class="lede">Screenshot your match, load it here, and get the mathematically best play for your exact gold and level.</p>
+
+      <label class="btn" for="scan-file">Choose a screenshot</label>
+      <input type="file" id="scan-file" accept="image/*" hidden />
+      <div id="scan-status"></div>
+      <div id="scan-preview"></div>
+
+      <h2>Your shop</h2>
+      <p class="lede">Cost is read from each card's frame colour. Pick the champion in each slot — the list is already narrowed to the detected cost.</p>
+      <div id="scan-slots"></div>
+
+      <h2>Game state</h2>
+      <div class="state-grid">
+        <div class="field"><label for="s-level">Level</label><input id="s-level" type="number" inputmode="numeric" min="1" max="11" /></div>
+        <div class="field"><label for="s-gold">Gold</label><input id="s-gold" type="number" inputmode="numeric" min="0" /></div>
+        <div class="field"><label for="s-xp">XP into level</label><input id="s-xp" type="number" inputmode="numeric" min="0" /></div>
+        <div class="field"><label for="s-stage">Stage</label><input id="s-stage" type="number" inputmode="numeric" min="1" max="7" /></div>
+        <div class="field"><label for="s-health">Health</label><input id="s-health" type="number" inputmode="numeric" min="1" max="100" /></div>
+        <div class="field"><label for="s-comp">Comp you're playing</label><select id="s-comp"></select></div>
+      </div>
+
+      <h2>What are you hunting?</h2>
+      <div class="state-grid">
+        <div class="field" style="grid-column:1/-1"><label for="s-target">Target unit</label><select id="s-target"></select></div>
+        <div class="field"><label for="s-owned">Copies you own</label><select id="s-owned"></select></div>
+        <div class="field"><label for="s-need">Copies still needed</label><select id="s-need"></select></div>
+        <div class="field" style="grid-column:1/-1"><label for="s-contested">Contested by</label><select id="s-contested"></select></div>
+      </div>
+
+      <h2>Verdict</h2>
+      <div id="scan-verdict"></div>
+    </section>
+
     <!-- Coach -->
     <section class="view" id="view-coach">
       <h2>Stage-by-stage coach</h2>
@@ -80,6 +116,7 @@
   </main>
 
   <nav class="tabbar">
+    <button id="tab-scan"><span class="ico">🎯</span>Scan</button>
     <button id="tab-coach"><span class="ico">🎓</span>Coach</button>
     <button id="tab-comps"><span class="ico">⚔️</span>Comps</button>
     <button id="tab-items"><span class="ico">🛠️</span>Items</button>

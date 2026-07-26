@@ -187,6 +187,54 @@ nav.tabbar button {
 nav.tabbar button .ico { font-size: 20px; line-height: 1; }
 nav.tabbar button.on { color: var(--gold); }
 
+/* ---- Scan tab ---- */
+label.btn { text-align: center; cursor: pointer; }
+.row-btns { display: flex; gap: 8px; margin-top: 10px; }
+.row-btns .btn { flex: 1; padding: 10px 12px; font-size: 14px; }
+
+.shot-wrap { position: relative; margin-top: 12px; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--hairline); line-height: 0; }
+.shot-wrap img { width: 100%; height: auto; display: block; }
+.region-box { position: absolute; border: 2px solid var(--gold);
+  background: rgba(240,185,75,.12); box-sizing: border-box; }
+.shot-wrap.calibrating .region-box { cursor: move; touch-action: none; }
+.slot-guide { position: absolute; top: 0; bottom: 0; width: 1px;
+  background: rgba(240,185,75,.7); }
+.region-handle { position: absolute; right: -9px; bottom: -9px; width: 20px; height: 20px;
+  background: var(--gold); border: 2px solid var(--page); border-radius: 5px;
+  cursor: nwse-resize; touch-action: none; }
+
+.slot-card { background: var(--surface); border: 1px solid var(--hairline);
+  border-radius: var(--radius); padding: 11px 12px; margin-bottom: 8px; }
+.slot-card.empty { opacity: .55; }
+.slot-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.slot-n { width: 20px; height: 20px; border-radius: 5px; background: var(--surface-2);
+  color: var(--ink-2); font-size: 11.5px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; }
+.slot-cost { font-size: 11px; font-weight: 800; border-radius: 5px; padding: 2px 7px; }
+.slot-conf { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+.slot-pick { width: 100%; background: var(--surface-2); color: var(--ink);
+  border: 1px solid var(--baseline); border-radius: 9px; padding: 9px 10px; font-size: 14.5px; }
+.slot-why { font-size: 12.5px; margin-top: 7px; color: var(--ink-2); }
+.slot-why.verdict-buy { color: var(--good); font-weight: 600; }
+.slot-why.verdict-skip { color: var(--muted); }
+.slot-why.verdict-consider { color: var(--warn); }
+
+.state-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+.state-grid .field { margin-bottom: 2px; }
+
+.verdict-card { background: linear-gradient(160deg, #241d0d, var(--surface));
+  border: 1px solid var(--gold); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
+.verdict-label { font-size: 11.5px; font-weight: 700; color: var(--gold);
+  letter-spacing: .06em; text-transform: uppercase; }
+.verdict-action { font-size: 21px; font-weight: 700; margin-top: 3px; line-height: 1.25; }
+.verdict-chance { font-size: 14px; color: var(--ink-2); margin-top: 5px; font-weight: 600; }
+.verdict-why { font-size: 13px; color: var(--ink-2); margin-top: 9px; }
+
+table.data td.num, table.data th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.data tr.best td { color: var(--gold); font-weight: 700; }
+
 @media (min-width: 700px) {
   .kpi-row { grid-template-columns: repeat(4, 1fr); }
+  .state-grid { grid-template-columns: repeat(3, 1fr); }
 }

@@ -1,5 +1,6 @@
 import { META, TRAITS, COMPS, COMPONENTS, COMBOS, ITEM_ARCHETYPES, STAGES, ECON_RULES, AUGMENT_GUIDE } from "./data.js";
 import { loadSettings, saveSettings, fetchMatches, demoMatches, computeStats, trendChart, distChart, bindChartTips, REGIONS } from "./analysis.js";
+import { initScan } from "./scan.js";
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -7,7 +8,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 // ---------------------------------------------------------------------------
 // Tabs
 // ---------------------------------------------------------------------------
-const TABS = ["coach", "comps", "items", "traits", "analysis"];
+const TABS = ["scan", "coach", "comps", "items", "traits", "analysis"];
 function showTab(name) {
   for (const t of TABS) {
     $(`#view-${t}`).classList.toggle("active", t === name);
@@ -213,6 +214,7 @@ $("#btn-demo").addEventListener("click", () => runAnalysis(true));
 // Boot
 // ---------------------------------------------------------------------------
 $("#patch-label").textContent = `Set ${META.set} · ${META.setName} · ${META.patch}`;
+initScan();
 renderCoach();
 renderComps();
 renderItems();
@@ -220,7 +222,7 @@ renderCombo();
 renderTraits();
 renderAnalysisSettings();
 runAnalysis(true);
-showTab(localStorage.getItem("ftt-tab") || "coach");
+showTab(localStorage.getItem("ftt-tab") || "scan");
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(() => {});
