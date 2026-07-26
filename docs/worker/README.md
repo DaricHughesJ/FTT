@@ -31,7 +31,7 @@ inside the app.
 
 ### 1. Give the worker somewhere to put screenshots
 
-1. Cloudflare dashboard → **Storage & Databases → KV → Create a namespace**.
+1. Cloudflare dashboard → **Storage & databases → Workers KV → Create a namespace**.
    Name it anything (e.g. `ftt-shots`).
 2. Your worker → **Settings → Bindings → Add → KV namespace**.
    Variable name **must** be `SHOTS`; select the namespace. **Deploy**.

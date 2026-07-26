@@ -79,7 +79,7 @@ to the app.
 
 ### 3.2 Give it somewhere to put screenshots
 
-1. **Storage & Databases → KV → Create a namespace**, name it `ftt-shots`
+1. **Storage & databases → Workers KV → Create a namespace**, name it `ftt-shots`
 2. Back in your worker → **Settings → Bindings → Add → KV namespace**
    (older dashboards: *Settings → Variables → KV Namespace Bindings*)
    - **Variable name**: `SHOTS` — exactly this, it's what the code looks for
