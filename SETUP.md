@@ -70,12 +70,25 @@ to the app.
 
 ### 3.1 Create the Cloudflare Worker
 
+> **On an iPhone, switch Safari to the desktop site first.** The Cloudflare
+> dashboard hides the code editor (and some menus) on narrow screens, so
+> **Edit code** simply won't appear. Tap **aA** at the left of Safari's
+> address bar → **Request Desktop Website**. Pinch-zoom as needed.
+
 1. Sign up free at **dash.cloudflare.com**
 2. **Compute (Workers) → Create → Workers → Create Worker**
 3. Name it (e.g. `ftt-proxy`) → **Deploy** the starter
-4. **Edit code**, delete what's there, paste the entire contents of
-   [`docs/worker/cloudflare-worker.js`](docs/worker/cloudflare-worker.js) (or tap **Copy worker code** in the app) → **Deploy**
+4. **Edit code** — the `</>` button on the worker's page. Delete what's
+   there, paste the entire contents of
+   [`docs/worker/cloudflare-worker.js`](docs/worker/cloudflare-worker.js)
+   (or tap **Copy worker code** in the app) → **Deploy**
 5. Copy your worker URL — `https://ftt-proxy.<something>.workers.dev`
+
+**Editor still missing?** It only exists *after* a worker is created — on
+the account home there's nothing to edit. If you've created one and still
+can't find it, go straight to
+`https://dash.cloudflare.com/?to=/:account/workers/services/view/ftt-proxy/production`
+(swap in your worker's name), or just do this part on a computer.
 
 ### 3.2 Give it somewhere to put screenshots
 
